@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ZenFox — Alpha Prototype</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦊</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --moss: #2D5016;
+    --moss-deep: #1A3009;
+    --bark: #3E2C1C;
+    --bark-light: #5a4535;
+    --meadow: #7BA05B;
+    --meadow-light: #a3c484;
+    --foxglove: #C4713B;
+    --foxglove-warm: #D4823F;
+    --limestone: #F4F1EA;
+    --mist: #E8E4DB;
+    --cloud: #FFFFFF;
+    --font-display: 'DM Serif Display', Georgia, serif;
+    --font-body: 'Source Sans 3', 'Segoe UI', sans-serif;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-body);
+    background: #1a1a1a;
+    display: flex; justify-content: center; align-items: flex-start;
+    min-height: 100vh; padding: 1rem;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ============ DEVICE FRAME ============ */
+  .device-wrapper {
+    display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
+    padding-top: 1rem;
+  }
+  .device-label {
+    color: rgba(255,255,255,0.3); font-size: 0.7rem;
+    font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+  }
+  .device-label span { color: var(--foxglove); }
+
+  .phone {
+    width: 390px; height: 844px;
+    background: var(--bark);
+    border-radius: 48px;
+    padding: 14px;
+    box-shadow:
+      0 0 0 2px rgba(255,255,255,0.05),
+      0 40px 100px rgba(0,0,0,0.5),
+      inset 0 0 30px rgba(0,0,0,0.1);
+    position: relative;
+  }
+  .phone::before {
+    content: '';
+    position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+    width: 120px; height: 28px; background: var(--bark);
+    border-radius: 0 0 16px 16px; z-index: 50;
+  }
+
+  .screen {
+    width: 100%; height: 100%;
+    border-radius: 36px;
+    background: var(--limestone);
+    overflow: hidden;
+    position: relative;
+    display: flex; flex-direction: column;
+  }
+
+  /* ============ STATUS BAR ============ */
+  .status-bar {
+    height: 50px; min-height: 50px;
+    background: var(--moss);
+    display: flex; justify-content: space-between; align-items: flex-end;
+    padding: 0 1.5rem 0.4rem;
+    font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.6);
+    z-index: 10;
+  }
+
+  /* ============ VIEWS ============ */
+  .view {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: none;
+    flex-direction: column;
+    -webkit-overflow-scrolling: touch;
+  }
+  .view.active { display: flex; }
+  .view::-webkit-scrollbar { display: none; }
+
+  /* ============ TAB BAR ============ */
+  .tab-bar {
+    height: 72px; min-height: 72px;
+    background: var(--cloud);
+    border-top: 1px solid rgba(0,0,0,0.06);
+    display: flex; justify-content: space-around; align-items: center;
+    padding-bottom: 8px;
+    z-index: 10;
+  }
+  .tab {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    background: none; border: none; cursor: pointer;
+    font-family: var(--font-body);
+    font-size: 0.55rem; font-weight: 700;
+    color: var(--bark); opacity: 0.35;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    transition: all 0.3s; padding: 0.4rem 0.8rem;
+  }
+  .tab.active { opacity: 1; color: var(--moss); }
+  .tab svg { width: 22px; height: 22px; transition: transform 0.2s; }
+  .tab.active svg { transform: scale(1.1); }
+
+  /* ============ HOME VIEW ============ */
+  .home-header {
+    background: linear-gradient(145deg, var(--moss) 0%, var(--moss-deep) 100%);
+    padding: 1.5rem 1.5rem 2rem;
+    color: var(--cloud);
+    position: relative; overflow: hidden;
+  }
+  .home-header::after {
+    content: ''; position: absolute;
+    width: 200px; height: 200px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(196,113,59,0.12), transparent 70%);
+    top: -60px; right: -40px;
+  }
+  .home-greeting { font-size: 0.7rem; opacity: 0.5; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 600; }
+  .home-name { font-family: var(--font-display); font-size: 1.8rem; margin-top: 0.2rem; }
+  .home-streak {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    margin-top: 0.6rem; padding: 0.35rem 0.8rem;
+    background: rgba(255,255,255,0.1); border-radius: 20px;
+    font-size: 0.7rem; font-weight: 600;
+  }
+
+  .home-body { padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+
+  .card {
+    background: var(--cloud); border-radius: 16px;
+    padding: 1.25rem; position: relative;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    border: 1px solid rgba(0,0,0,0.03);
+  }
+  .card-label {
+    font-size: 0.6rem; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--moss); margin-bottom: 0.6rem;
+  }
+
+  /* Session Card */
+  .session-card { overflow: hidden; }
+  .session-card .session-bg {
+    position: absolute; top: 0; right: 0;
+    width: 120px; height: 120px;
+    background: radial-gradient(circle at 80% 20%, rgba(123,160,91,0.12), transparent 70%);
+  }
+  .session-title {
+    font-family: var(--font-display); font-size: 1.2rem;
+    color: var(--bark); margin-bottom: 0.15rem;
+  }
+  .session-meta { font-size: 0.75rem; opacity: 0.45; margin-bottom: 1rem; }
+  .session-desc { font-size: 0.8rem; opacity: 0.55; line-height: 1.5; margin-bottom: 1rem; }
+
+  .play-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.7rem 1.4rem; border-radius: 10px;
+    background: var(--foxglove); color: var(--cloud);
+    border: none; cursor: pointer;
+    font-family: var(--font-body); font-size: 0.85rem; font-weight: 700;
+    transition: all 0.3s; letter-spacing: 0.02em;
+  }
+  .play-btn:hover { background: var(--foxglove-warm); transform: scale(1.02); }
+  .play-btn.playing { background: var(--moss); }
+
+  /* Mood Card */
+  .mood-row {
+    display: flex; justify-content: space-between; gap: 0.5rem;
+    margin-top: 0.3rem;
+  }
+  .mood-btn {
+    flex: 1; padding: 0.7rem 0; border-radius: 12px;
+    border: 2px solid rgba(0,0,0,0.06); background: var(--limestone);
+    cursor: pointer; font-size: 1.4rem;
+    transition: all 0.3s; display: flex; flex-direction: column;
+    align-items: center; gap: 0.2rem;
+  }
+  .mood-btn span { font-size: 0.55rem; opacity: 0.4; font-weight: 600; color: var(--bark); }
+  .mood-btn:hover { border-color: var(--foxglove); background: rgba(196,113,59,0.05); }
+  .mood-btn.selected {
+    border-color: var(--foxglove); background: rgba(196,113,59,0.1);
+    transform: scale(1.08); box-shadow: 0 4px 16px rgba(196,113,59,0.15);
+  }
+  .mood-feedback {
+    margin-top: 0.8rem; padding: 0.75rem 1rem; border-radius: 10px;
+    background: var(--limestone); font-size: 0.8rem; color: var(--bark);
+    line-height: 1.5; opacity: 0; max-height: 0; overflow: hidden;
+    transition: all 0.4s;
+  }
+  .mood-feedback.show { opacity: 0.7; max-height: 100px; margin-top: 0.8rem; }
+
+  /* Trail Card */
+  .trail-progress-bar {
+    width: 100%; height: 6px; background: var(--mist);
+    border-radius: 3px; margin-top: 0.6rem; overflow: hidden;
+  }
+  .trail-progress-fill {
+    height: 100%; border-radius: 3px;
+    background: linear-gradient(90deg, var(--moss), var(--meadow));
+    transition: width 0.8s cubic-bezier(0.16,1,0.3,1);
+  }
+  .trail-info { display: flex; justify-content: space-between; align-items: baseline; }
+  .trail-title { font-family: var(--font-display); font-size: 1.05rem; color: var(--bark); }
+  .trail-week { font-size: 0.7rem; opacity: 0.4; font-weight: 600; }
+
+  /* ============ PLAYER VIEW ============ */
+  .player-view {
+    background:
+      linear-gradient(180deg, rgba(26,48,9,0.92) 0%, rgba(45,80,22,0.88) 50%, rgba(62,44,28,0.9) 100%),
+      url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=60') center/cover;
+    color: var(--cloud);
+    justify-content: space-between;
+    padding: 2rem 1.5rem;
+  }
+  .player-back {
+    background: none; border: none; color: rgba(255,255,255,0.5);
+    font-size: 0.75rem; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; gap: 0.3rem;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    padding: 0.5rem 0; transition: color 0.3s;
+  }
+  .player-back:hover { color: var(--cloud); }
+
+  .player-center { text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+  .player-session-label { font-size: 0.65rem; opacity: 0.4; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 700; }
+  .player-title { font-family: var(--font-display); font-size: 1.8rem; margin: 0.5rem 0 0.3rem; }
+  .player-narrator { font-size: 0.8rem; opacity: 0.5; margin-bottom: 2.5rem; }
+
+  /* Waveform */
+  .waveform {
+    display: flex; align-items: center; justify-content: center;
+    gap: 3px; height: 50px; margin-bottom: 2rem; width: 80%;
+  }
+  .wave-bar {
+    width: 3px; border-radius: 2px;
+    background: rgba(255,255,255,0.25);
+    transition: height 0.15s, background 0.3s;
+  }
+  .wave-bar.active { background: var(--foxglove-warm); }
+
+  .player-controls { display: flex; align-items: center; justify-content: center; gap: 2rem; margin-bottom: 1.5rem; }
+  .skip-btn {
+    background: none; border: none; color: rgba(255,255,255,0.4);
+    font-size: 0.7rem; font-weight: 700; cursor: pointer;
+    transition: color 0.3s;
+  }
+  .skip-btn:hover { color: var(--cloud); }
+  .main-play {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: var(--foxglove); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 30px rgba(196,113,59,0.35);
+    transition: all 0.3s;
+  }
+  .main-play:hover { transform: scale(1.06); background: var(--foxglove-warm); }
+  .main-play svg { width: 24px; height: 24px; fill: var(--cloud); }
+
+  .player-time {
+    display: flex; justify-content: space-between; width: 80%;
+    font-size: 0.7rem; opacity: 0.3; font-weight: 600;
+  }
+  .player-scrubber {
+    width: 80%; height: 4px; background: rgba(255,255,255,0.1);
+    border-radius: 2px; margin: 0.8rem 0 0.3rem;
+    cursor: pointer; position: relative;
+  }
+  .scrubber-fill {
+    height: 100%; border-radius: 2px;
+    background: var(--foxglove);
+    transition: width 0.3s linear;
+    position: relative;
+  }
+  .scrubber-fill::after {
+    content: ''; position: absolute;
+    right: -5px; top: -3px;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--cloud);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+
+  .player-bottom {
+    text-align: center; font-size: 0.7rem; opacity: 0.3;
+    font-style: italic;
+  }
+
+  /* Guided text overlay */
+  .guided-text {
+    font-family: var(--font-display); font-size: 1.1rem;
+    text-align: center; line-height: 1.6;
+    opacity: 0; transition: opacity 1s; min-height: 3.5rem;
+    margin-bottom: 1.5rem; max-width: 280px;
+    font-style: italic;
+  }
+  .guided-text.show { opacity: 0.7; }
+
+  /* ============ JOURNAL VIEW ============ */
+  .journal-header {
+    background: var(--moss);
+    padding: 1.5rem 1.5rem 1.25rem;
+    color: var(--cloud);
+  }
+  .journal-header h2 { font-family: var(--font-display); font-size: 1.4rem; }
+  .journal-header p { font-size: 0.75rem; opacity: 0.5; margin-top: 0.2rem; }
+
+  .journal-body { padding: 1.25rem; flex: 1; display: flex; flex-direction: column; gap: 1rem; }
+
+  .new-entry-form {
+    background: var(--cloud); border-radius: 16px; padding: 1.25rem;
+    border: 2px dashed rgba(0,0,0,0.08);
+  }
+  .entry-input {
+    width: 100%; border: none; background: none; resize: none;
+    font-family: var(--font-body); font-size: 0.9rem;
+    color: var(--bark); padding: 0.5rem 0;
+    outline: none; min-height: 60px;
+  }
+  .entry-input::placeholder { color: var(--bark); opacity: 0.3; }
+  .entry-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
+  .entry-tag {
+    padding: 0.35rem 0.75rem; border-radius: 20px;
+    border: 1.5px solid var(--mist); background: var(--limestone);
+    font-size: 0.7rem; font-weight: 600; color: var(--bark);
+    cursor: pointer; transition: all 0.2s; opacity: 0.5;
+  }
+  .entry-tag:hover, .entry-tag.selected { border-color: var(--meadow); background: rgba(123,160,91,0.1); opacity: 1; color: var(--moss); }
+  .entry-submit {
+    margin-top: 0.75rem; padding: 0.6rem 1.2rem;
+    border-radius: 8px; border: none;
+    background: var(--moss); color: var(--cloud);
+    font-family: var(--font-body); font-size: 0.8rem; font-weight: 700;
+    cursor: pointer; transition: all 0.3s;
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .entry-submit:hover { background: var(--meadow); }
+
+  .journal-entries { display: flex; flex-direction: column; gap: 0.75rem; }
+  .journal-entry {
+    background: var(--cloud); border-radius: 14px; padding: 1rem 1.25rem;
+    border-left: 3px solid var(--meadow);
+    box-shadow: 0 1px 6px rgba(0,0,0,0.03);
+    animation: slideIn 0.4s cubic-bezier(0.16,1,0.3,1);
+  }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .entry-date { font-size: 0.6rem; font-weight: 700; color: var(--moss); opacity: 0.5; text-transform: uppercase; letter-spacing: 0.08em; }
+  .entry-text { font-size: 0.85rem; color: var(--bark); line-height: 1.5; margin-top: 0.3rem; }
+  .entry-tag-list { display: flex; gap: 0.4rem; margin-top: 0.5rem; }
+  .entry-tag-label { font-size: 0.6rem; padding: 0.2rem 0.5rem; border-radius: 10px; background: rgba(123,160,91,0.1); color: var(--moss); font-weight: 600; }
+
+  /* ============ TRAILS VIEW ============ */
+  .trails-header {
+    background: linear-gradient(145deg, var(--moss) 0%, var(--moss-deep) 100%);
+    padding: 1.5rem 1.5rem 1.25rem; color: var(--cloud);
+  }
+  .trails-header h2 { font-family: var(--font-display); font-size: 1.4rem; }
+  .trails-header p { font-size: 0.75rem; opacity: 0.5; margin-top: 0.2rem; }
+
+  .trails-body { padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+
+  .trail-card {
+    background: var(--cloud); border-radius: 16px; overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    border: 1px solid rgba(0,0,0,0.03);
+  }
+  .trail-image {
+    height: 100px; width: 100%;
+    background-size: cover; background-position: center;
+    position: relative;
+  }
+  .trail-image::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
+  }
+  .trail-season {
+    position: absolute; bottom: 0.5rem; left: 0.75rem;
+    font-size: 0.6rem; font-weight: 700; color: var(--cloud);
+    text-transform: uppercase; letter-spacing: 0.1em; z-index: 2;
+  }
+  .trail-card-body { padding: 1rem 1.25rem; }
+  .trail-card-title { font-family: var(--font-display); font-size: 1.05rem; color: var(--bark); }
+  .trail-card-desc { font-size: 0.75rem; opacity: 0.45; margin-top: 0.2rem; line-height: 1.5; }
+
+  .trail-weeks { display: flex; gap: 0.3rem; margin-top: 0.8rem; }
+  .trail-week-dot {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 2px solid var(--mist); background: var(--limestone);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.6rem; font-weight: 700; color: var(--bark); opacity: 0.4;
+    transition: all 0.3s; cursor: pointer;
+  }
+  .trail-week-dot.completed { border-color: var(--meadow); background: var(--meadow); color: var(--cloud); opacity: 1; }
+  .trail-week-dot.current { border-color: var(--foxglove); color: var(--foxglove); opacity: 1; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(196,113,59,0.3); } 50% { box-shadow: 0 0 0 6px rgba(196,113,59,0); } }
+
+  .trail-action {
+    margin-top: 0.8rem; padding: 0.6rem 1.2rem;
+    border-radius: 8px; border: none;
+    background: var(--foxglove); color: var(--cloud);
+    font-family: var(--font-body); font-size: 0.8rem; font-weight: 700;
+    cursor: pointer; transition: all 0.3s; width: 100%;
+  }
+  .trail-action:hover { background: var(--foxglove-warm); }
+
+  /* ============ MORE VIEW ============ */
+  .more-header {
+    background: var(--moss); padding: 1.5rem; color: var(--cloud);
+  }
+  .more-header h2 { font-family: var(--font-display); font-size: 1.4rem; }
+  .more-body { padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .more-item {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 1rem; border-radius: 12px; background: var(--cloud);
+    cursor: pointer; transition: background 0.2s;
+    border: 1px solid rgba(0,0,0,0.03);
+  }
+  .more-item:hover { background: var(--mist); }
+  .more-icon { font-size: 1.2rem; width: 2rem; text-align: center; }
+  .more-text h4 { font-size: 0.85rem; font-weight: 700; color: var(--bark); }
+  .more-text p { font-size: 0.7rem; opacity: 0.4; margin-top: 0.1rem; }
+
+  .more-disclaimer {
+    margin-top: 1rem; padding: 1rem; border-radius: 10px;
+    background: rgba(196,113,59,0.06);
+    border: 1px solid rgba(196,113,59,0.1);
+    font-size: 0.7rem; line-height: 1.6; color: var(--bark); opacity: 0.5;
+  }
+
+  /* ============ TOAST ============ */
+  .toast {
+    position: absolute; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+    padding: 0.7rem 1.4rem; border-radius: 12px;
+    background: var(--bark); color: var(--cloud);
+    font-size: 0.8rem; font-weight: 600;
+    opacity: 0; transition: all 0.4s; z-index: 100;
+    white-space: nowrap; pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 420px) {
+    body { padding: 0; }
+    .phone {
+      width: 100vw; height: 100vh;
+      border-radius: 0; padding: 0;
+      box-shadow: none;
+    }
+    .phone::before { display: none; }
+    .screen { border-radius: 0; }
+    .device-label { display: none; }
+    .status-bar { padding-top: 0.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="device-wrapper">
+  <div class="device-label">ZenFox <span>Alpha Prototype</span> · Interactive Demo</div>
+  <div class="phone">
+    <div class="screen" id="screen">
+
+      <!-- STATUS BAR -->
+      <div class="status-bar">
+        <span>9:41</span>
+        <span>🦊 ZenFox</span>
+        <span>⚡ 87%</span>
+      </div>
+
+      <!-- ===== HOME VIEW ===== -->
+      <div class="view active" id="view-home">
+        <div class="home-header">
+          <div class="home-greeting">Good morning</div>
+          <div class="home-name">Seán 🦊</div>
+          <div class="home-streak">🔥 Day <span id="streakCount">1</span> of your trail</div>
+        </div>
+        <div class="home-body">
+          <!-- Today's Session -->
+          <div class="card session-card">
+            <div class="session-bg"></div>
+            <div class="card-label">Today's Session</div>
+            <div class="session-title" id="sessionTitle">Listening to Rain</div>
+            <div class="session-meta" id="sessionMeta">8 min · Field audio · Narrated by Máirín</div>
+            <div class="session-desc">Close your eyes and let the sound of rain on leaves bring you to stillness. A practice for the end of a long day.</div>
+            <button class="play-btn" id="homePlayBtn" onclick="openPlayer()">
+              ▶ &nbsp;Begin Session
+            </button>
+          </div>
+
+          <!-- Mood Check-in -->
+          <div class="card">
+            <div class="card-label">How are you today?</div>
+            <div class="mood-row">
+              <button class="mood-btn" onclick="selectMood(this, 'Rough')" data-mood="1">😟<span>Rough</span></button>
+              <button class="mood-btn" onclick="selectMood(this, 'Low')" data-mood="2">😐<span>Low</span></button>
+              <button class="mood-btn" onclick="selectMood(this, 'Okay')" data-mood="3">🙂<span>Okay</span></button>
+              <button class="mood-btn" onclick="selectMood(this, 'Good')" data-mood="4">😊<span>Good</span></button>
+              <button class="mood-btn" onclick="selectMood(this, 'Great')" data-mood="5">🌟<span>Great</span></button>
+            </div>
+            <div class="mood-feedback" id="moodFeedback"></div>
+          </div>
+
+          <!-- Trail Progress -->
+          <div class="card" onclick="switchTab('trails')" style="cursor:pointer;">
+            <div class="card-label">Your Resilience Trail</div>
+            <div class="trail-info">
+              <div class="trail-title">Spring Awakening</div>
+              <div class="trail-week" id="trailWeekLabel">Week 3 of 8</div>
+            </div>
+            <div class="trail-progress-bar">
+              <div class="trail-progress-fill" id="trailProgress" style="width: 37%"></div>
+            </div>
+          </div>
+
+          <!-- Fox Spotting Quick Entry -->
+          <div class="card" onclick="switchTab('journal')" style="cursor:pointer;">
+            <div class="card-label">🦊 Fox Spotting</div>
+            <div style="font-size:0.85rem;color:var(--bark);opacity:0.55;">Tap to log what you noticed today in the fields →</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PLAYER VIEW ===== -->
+      <div class="view" id="view-player">
+        <div class="player-view">
+          <button class="player-back" onclick="closePlayer()">← Back</button>
+
+          <div class="player-center">
+            <div class="player-session-label">Guided Session</div>
+            <div class="player-title" id="playerTitle">Listening to Rain</div>
+            <div class="player-narrator">Narrated by Máirín</div>
+
+            <div class="guided-text" id="guidedText"></div>
+
+            <div class="waveform" id="waveform"></div>
+
+            <div class="player-controls">
+              <button class="skip-btn" onclick="skipBack()">−15s</button>
+              <button class="main-play" id="mainPlayBtn" onclick="togglePlay()">
+                <svg viewBox="0 0 24 24" id="playIcon"><polygon points="6,3 20,12 6,21"/></svg>
+              </button>
+              <button class="skip-btn" onclick="skipForward()">+15s</button>
+            </div>
+
+            <div class="player-scrubber" id="scrubber" onclick="scrub(event)">
+              <div class="scrubber-fill" id="scrubberFill" style="width:0%"></div>
+            </div>
+            <div class="player-time">
+              <span id="timeElapsed">0:00</span>
+              <span id="timeTotal">8:00</span>
+            </div>
+          </div>
+
+          <div class="player-bottom">
+            This is a wellbeing practice, not therapy.<br>
+            If you need support, contact Pieta House: 1800 247 247
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== JOURNAL VIEW ===== -->
+      <div class="view" id="view-journal">
+        <div class="journal-header">
+          <h2>🦊 Fox Spotting</h2>
+          <p>Your nature observation journal</p>
+        </div>
+        <div class="journal-body">
+          <div class="new-entry-form">
+            <div class="card-label">New Observation</div>
+            <textarea class="entry-input" id="journalInput" placeholder="What did you notice today? A bird call, a change in the sky, frost on the gate..."></textarea>
+            <div class="entry-tags" id="entryTags">
+              <span class="entry-tag" onclick="toggleTag(this)">🐦 Wildlife</span>
+              <span class="entry-tag" onclick="toggleTag(this)">🌤️ Weather</span>
+              <span class="entry-tag" onclick="toggleTag(this)">🌿 Plants</span>
+              <span class="entry-tag" onclick="toggleTag(this)">🌅 Light</span>
+              <span class="entry-tag" onclick="toggleTag(this)">🔇 Silence</span>
+              <span class="entry-tag" onclick="toggleTag(this)">💧 Water</span>
+            </div>
+            <button class="entry-submit" onclick="submitEntry()">🦊 Log Observation</button>
+          </div>
+
+          <div class="journal-entries" id="journalEntries">
+            <!-- Pre-seeded entries -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== TRAILS VIEW ===== -->
+      <div class="view" id="view-trails">
+        <div class="trails-header">
+          <h2>Resilience Trails</h2>
+          <p>8-week seasonal programmes</p>
+        </div>
+        <div class="trails-body">
+          <div class="trail-card">
+            <div class="trail-image" style="background-image:url('https://images.unsplash.com/photo-1490750967868-88aa4f44baee?w=600&q=70')">
+              <div class="trail-season">🌱 Spring · Active</div>
+            </div>
+            <div class="trail-card-body">
+              <div class="trail-card-title">Spring Awakening</div>
+              <div class="trail-card-desc">Reconnect with the land as it wakes up. Practices for calving season, lengthening days, and new growth.</div>
+              <div class="trail-weeks" id="trailWeeks"></div>
+              <button class="trail-action" onclick="advanceTrail()">Complete This Week's Practice →</button>
+            </div>
+          </div>
+
+          <div class="trail-card" style="opacity:0.5;">
+            <div class="trail-image" style="background-image:url('https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=600&q=70')">
+              <div class="trail-season">☀️ Summer · Coming June</div>
+            </div>
+            <div class="trail-card-body">
+              <div class="trail-card-title">Harvest Focus</div>
+              <div class="trail-card-desc">Stay present through the busiest months. Short practices for silage days and long evenings.</div>
+            </div>
+          </div>
+
+          <div class="trail-card" style="opacity:0.35;">
+            <div class="trail-image" style="background-image:url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=70')">
+              <div class="trail-season">❄️ Winter · Coming November</div>
+            </div>
+            <div class="trail-card-body">
+              <div class="trail-card-title">Winter Rest</div>
+              <div class="trail-card-desc">When the land sleeps, you rest too. Practices for dark mornings and indoor stillness.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== MORE VIEW ===== -->
+      <div class="view" id="view-more">
+        <div class="more-header">
+          <h2>More</h2>
+        </div>
+        <div class="more-body">
+          <div class="more-item">
+            <div class="more-icon">👤</div>
+            <div class="more-text"><h4>Profile</h4><p>Seán O'Brien · West Cork</p></div>
+          </div>
+          <div class="more-item">
+            <div class="more-icon">📊</div>
+            <div class="more-text"><h4>Mood History</h4><p id="moodHistoryLabel">No check-ins yet</p></div>
+          </div>
+          <div class="more-item">
+            <div class="more-icon">📅</div>
+            <div class="more-text"><h4>Field Sessions</h4><p>Next session: Saturday 10am · Ballydehob Woods</p></div>
+          </div>
+          <div class="more-item">
+            <div class="more-icon">📞</div>
+            <div class="more-text"><h4>Get Support</h4><p>Pieta House · Samaritans · Your GP</p></div>
+          </div>
+          <div class="more-item">
+            <div class="more-icon">⚙️</div>
+            <div class="more-text"><h4>Settings</h4><p>Notifications · Offline downloads · Privacy</p></div>
+          </div>
+          <div class="more-disclaimer">
+            <strong>ZenFox Alpha Prototype</strong><br>
+            This is a demonstration of the ZenFox concept. ZenFox is a peer wellbeing support service — it is not therapy, medical treatment, or a substitute for professional care. If you are in crisis, please contact Pieta House (1800 247 247), Samaritans (116 123), or your GP.
+          </div>
+        </div>
+      </div>
+
+      <!-- TOAST -->
+      <div class="toast" id="toast"></div>
+
+      <!-- TAB BAR -->
+      <div class="tab-bar">
+        <button class="tab active" data-view="home" onclick="switchTab('home')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>
+          Home
+        </button>
+        <button class="tab" data-view="trails" onclick="switchTab('trails')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          Trails
+        </button>
+        <button class="tab" data-view="journal" onclick="switchTab('journal')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          Journal
+        </button>
+        <button class="tab" data-view="more" onclick="switchTab('more')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+          More
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // ============ STATE ============
+  const state = {
+    currentView: 'home',
+    isPlaying: false,
+    playTime: 0,
+    totalTime: 480, // 8 min
+    playInterval: null,
+    waveInterval: null,
+    moodToday: null,
+    moodHistory: [],
+    trailWeek: 3,
+    streak: 1,
+    journalEntries: [
+      { text: "Heron standing in the lower field, completely still for ten minutes. Watched it from the gate.", tags: ["🐦 Wildlife", "🔇 Silence"], date: "Yesterday, 4:30pm" },
+      { text: "First real frost this week. Everything white and crunching underfoot at 6am. The cows' breath was visible.", tags: ["🌤️ Weather", "🌅 Light"], date: "Monday, 6:15am" },
+      { text: "Noticed the hawthorn is starting to bud along the boreen. Spring is coming.", tags: ["🌿 Plants"], date: "Last Saturday, 2pm" }
+    ],
+    guidedPrompts: [
+      "Find a comfortable place to stand or sit…",
+      "Feel the ground beneath you…",
+      "Let your shoulders drop…",
+      "Listen to the rain, not the thoughts…",
+      "Notice the space between the drops…",
+      "Your only job right now is to be here…",
+      "Breathe in through your nose…",
+      "Let the land hold you for a moment…",
+      "There is nowhere else to be…",
+      "Slowly open your eyes when you're ready…"
+    ],
+    sessions: [
+      { title: "Listening to Rain", duration: "8 min", narrator: "Máirín", type: "Field audio" },
+      { title: "Morning Gate Pause", duration: "5 min", narrator: "Pádraig", type: "Standing practice" },
+      { title: "Soil and Breath", duration: "12 min", narrator: "Máirín", type: "Walking practice" },
+      { title: "Watching the Herd", duration: "7 min", narrator: "Aoife", type: "Observation" },
+      { title: "Evening Unwind", duration: "10 min", narrator: "Pádraig", type: "Body scan" }
+    ]
+  };
+
+  // ============ NAVIGATION ============
+  function switchTab(view) {
+    if (state.isPlaying) stopPlay();
+    state.currentView = view;
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + view).classList.add('active');
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.view === view));
+  }
+
+  // ============ PLAYER ============
+  function openPlayer() {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-player').classList.add('active');
+    document.getElementById('playerTitle').textContent = document.getElementById('sessionTitle').textContent;
+    state.playTime = 0;
+    updatePlayerUI();
+    setTimeout(() => togglePlay(), 600);
+  }
+
+  function closePlayer() {
+    stopPlay();
+    switchTab('home');
+  }
+
+  function togglePlay() {
+    if (state.isPlaying) {
+      stopPlay();
+    } else {
+      state.isPlaying = true;
+      document.getElementById('playIcon').innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+      state.playInterval = setInterval(() => {
+        state.playTime += 1;
+        if (state.playTime >= state.totalTime) {
+          stopPlay();
+          showToast("Session complete 🌿");
+          state.streak++;
+          document.getElementById('streakCount').textContent = state.streak;
+          return;
+        }
+        updatePlayerUI();
+      }, 1000);
+      // Animated waveform
+      state.waveInterval = setInterval(animateWaveform, 180);
+      // Guided prompts
+      showGuidedPrompts();
+    }
+  }
+
+  function stopPlay() {
+    state.isPlaying = false;
+    clearInterval(state.playInterval);
+    clearInterval(state.waveInterval);
+    document.getElementById('playIcon').innerHTML = '<polygon points="6,3 20,12 6,21"/>';
+  }
+
+  function updatePlayerUI() {
+    const pct = (state.playTime / state.totalTime) * 100;
+    document.getElementById('scrubberFill').style.width = pct + '%';
+    document.getElementById('timeElapsed').textContent = formatTime(state.playTime);
+    document.getElementById('timeTotal').textContent = formatTime(state.totalTime);
+  }
+
+  function formatTime(s) {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return m + ':' + (sec < 10 ? '0' : '') + sec;
+  }
+
+  function skipBack() { state.playTime = Math.max(0, state.playTime - 15); updatePlayerUI(); }
+  function skipForward() { state.playTime = Math.min(state.totalTime, state.playTime + 15); updatePlayerUI(); }
+
+  function scrub(e) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const pct = (e.clientX - rect.left) / rect.width;
+    state.playTime = Math.floor(pct * state.totalTime);
+    updatePlayerUI();
+  }
+
+  // Waveform
+  function initWaveform() {
+    const wf = document.getElementById('waveform');
+    for (let i = 0; i < 40; i++) {
+      const bar = document.createElement('div');
+      bar.className = 'wave-bar';
+      bar.style.height = (8 + Math.random() * 20) + 'px';
+      wf.appendChild(bar);
+    }
+  }
+
+  function animateWaveform() {
+    const bars = document.querySelectorAll('.wave-bar');
+    const progress = state.playTime / state.totalTime;
+    bars.forEach((bar, i) => {
+      const h = state.isPlaying ? (10 + Math.random() * 35) : (8 + Math.random() * 12);
+      bar.style.height = h + 'px';
+      bar.classList.toggle('active', (i / bars.length) < progress);
+    });
+  }
+
+  // Guided text prompts
+  function showGuidedPrompts() {
+    const el = document.getElementById('guidedText');
+    let idx = 0;
+    function showNext() {
+      if (!state.isPlaying || idx >= state.guidedPrompts.length) {
+        el.classList.remove('show');
+        return;
+      }
+      el.textContent = state.guidedPrompts[idx];
+      el.classList.add('show');
+      idx++;
+      setTimeout(() => {
+        el.classList.remove('show');
+        setTimeout(showNext, 1500);
+      }, 5000);
+    }
+    setTimeout(showNext, 2000);
+  }
+
+  // ============ MOOD ============
+  const moodResponses = {
+    'Rough': "Thanks for being honest. That takes courage. Remember, it's okay to have a hard day. If things feel heavy, the support page is there for you.",
+    'Low': "Noted. Low days are part of it. Sometimes a short walk or a few minutes outside can shift things, even a little.",
+    'Okay': "Okay is perfectly fine. A steady day is a good day. Maybe today's session will bring a quiet moment.",
+    'Good': "That's good to hear. Keep noticing what's working — those are the days worth remembering.",
+    'Great': "Wonderful. Hold onto that feeling. What made today good?"
+  };
+
+  function selectMood(btn, mood) {
+    document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    state.moodToday = mood;
+    state.moodHistory.push({ mood, date: new Date().toLocaleDateString() });
+
+    const fb = document.getElementById('moodFeedback');
+    fb.textContent = moodResponses[mood];
+    fb.classList.add('show');
+
+    document.getElementById('moodHistoryLabel').textContent = state.moodHistory.length + ' check-in(s) recorded';
+    showToast('Mood logged: ' + mood);
+  }
+
+  // ============ JOURNAL ============
+  function toggleTag(el) { el.classList.toggle('selected'); }
+
+  function submitEntry() {
+    const text = document.getElementById('journalInput').value.trim();
+    if (!text) { showToast('Write something first!'); return; }
+
+    const tags = [];
+    document.querySelectorAll('.entry-tag.selected').forEach(t => { tags.push(t.textContent); t.classList.remove('selected'); });
+
+    const now = new Date();
+    const timeStr = 'Just now · ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    state.journalEntries.unshift({ text, tags, date: timeStr });
+    document.getElementById('journalInput').value = '';
+    renderJournal();
+    showToast('Observation logged 🦊');
+  }
+
+  function renderJournal() {
+    const container = document.getElementById('journalEntries');
+    container.innerHTML = '';
+    state.journalEntries.forEach(entry => {
+      const div = document.createElement('div');
+      div.className = 'journal-entry';
+      div.innerHTML = `
+        <div class="entry-date">${entry.date}</div>
+        <div class="entry-text">${entry.text}</div>
+        ${entry.tags.length ? `<div class="entry-tag-list">${entry.tags.map(t => `<span class="entry-tag-label">${t}</span>`).join('')}</div>` : ''}
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  // ============ TRAILS ============
+  function renderTrailWeeks() {
+    const container = document.getElementById('trailWeeks');
+    container.innerHTML = '';
+    for (let i = 1; i <= 8; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'trail-week-dot';
+      if (i < state.trailWeek) dot.classList.add('completed');
+      if (i === state.trailWeek) dot.classList.add('current');
+      dot.textContent = i;
+      container.appendChild(dot);
+    }
+    document.getElementById('trailWeekLabel').textContent = `Week ${state.trailWeek} of 8`;
+    document.getElementById('trailProgress').style.width = ((state.trailWeek / 8) * 100) + '%';
+  }
+
+  function advanceTrail() {
+    if (state.trailWeek < 8) {
+      state.trailWeek++;
+      renderTrailWeeks();
+      state.streak++;
+      document.getElementById('streakCount').textContent = state.streak;
+      showToast(`Week ${state.trailWeek - 1} complete! 🌱`);
+
+      // Rotate session
+      const sIdx = (state.trailWeek - 1) % state.sessions.length;
+      const s = state.sessions[sIdx];
+      document.getElementById('sessionTitle').textContent = s.title;
+      document.getElementById('sessionMeta').textContent = `${s.duration} · ${s.type} · Narrated by ${s.narrator}`;
+    } else {
+      showToast("Trail complete! 🎉 You finished Spring Awakening.");
+    }
+  }
+
+  // ============ TOAST ============
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // ============ INIT ============
+  initWaveform();
+  renderJournal();
+  renderTrailWeeks();
+</script>
+
+</body>
+</html>
