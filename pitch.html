@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZenFox — Investor Pitch</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦊</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Source+Sans+3:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --moss: #2D5016;
+    --moss-deep: #1A3009;
+    --bark: #3E2C1C;
+    --meadow: #7BA05B;
+    --foxglove: #C4713B;
+    --foxglove-warm: #D4823F;
+    --limestone: #F4F1EA;
+    --mist: #E8E4DB;
+    --cloud: #FFFFFF;
+    --font-display: 'DM Serif Display', Georgia, serif;
+    --font-body: 'Source Sans 3', 'Segoe UI', sans-serif;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-body);
+    color: var(--bark);
+    background: #111;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ============ SLIDE SYSTEM ============ */
+  .slide {
+    width: 100vw; min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+  }
+
+  .slide-inner {
+    width: 100%; max-width: 1200px;
+    padding: 4rem 5%;
+    position: relative; z-index: 2;
+  }
+
+  /* ============ PROGRESS BAR ============ */
+  .progress-track {
+    position: fixed; top: 0; left: 0; right: 0; height: 3px;
+    background: rgba(255,255,255,0.08); z-index: 200;
+  }
+  .progress-fill {
+    height: 100%; width: 0%; background: var(--foxglove);
+    transition: width 0.3s;
+  }
+
+  /* ============ SLIDE NAV ============ */
+  .slide-nav {
+    position: fixed; right: 1.5rem; top: 50%; transform: translateY(-50%);
+    z-index: 150; display: flex; flex-direction: column; gap: 0.5rem;
+  }
+  .slide-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    border: none; cursor: pointer;
+    transition: all 0.3s;
+  }
+  .slide-dot.active { background: var(--foxglove); transform: scale(1.4); }
+
+  /* ============ TYPOGRAPHY ============ */
+  .mega { font-family: var(--font-display); font-size: clamp(3.5rem, 8vw, 7rem); line-height: 1.05; }
+  .hero-num { font-family: var(--font-display); font-size: clamp(5rem, 14vw, 12rem); line-height: 1; }
+  .section-tag {
+    display: inline-block; font-size: 0.7rem; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    padding: 0.4rem 1rem; border-radius: 50px;
+    margin-bottom: 1.5rem;
+  }
+  .slide-note {
+    font-size: 0.85rem; font-weight: 300; opacity: 0.5;
+    margin-top: 1rem; max-width: 400px;
+  }
+
+  /* ============ REVEAL ANIMATIONS ============ */
+  .reveal {
+    opacity: 0; transform: translateY(50px);
+    transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-d1 { transition-delay: 0.15s; }
+  .reveal-d2 { transition-delay: 0.3s; }
+  .reveal-d3 { transition-delay: 0.45s; }
+  .reveal-d4 { transition-delay: 0.6s; }
+  .reveal-d5 { transition-delay: 0.75s; }
+  .reveal-d6 { transition-delay: 0.9s; }
+
+  /* ============ SLIDE 1: TITLE ============ */
+  .s-title {
+    background:
+      linear-gradient(175deg, rgba(45,80,22,0.7) 0%, rgba(26,48,9,0.85) 100%),
+      url('https://images.unsplash.com/photo-1590089415225-401ed6f9db8e?w=1920&q=85') center/cover;
+  }
+  .s-title .slide-inner { text-align: center; }
+  .s-title .fox-logo {
+    width: 80px; height: 80px; margin: 0 auto 2rem;
+    animation: fadeIn 1s 0.2s both;
+  }
+  .s-title h1 { color: var(--cloud); margin-bottom: 1rem; animation: fadeIn 1s 0.4s both; }
+  .s-title h1 em { font-style: italic; color: var(--foxglove-warm); }
+  .s-title .tagline {
+    font-size: 1.3rem; font-weight: 300; color: rgba(255,255,255,0.65);
+    max-width: 550px; margin: 0 auto 3rem; line-height: 1.6;
+    animation: fadeIn 1s 0.6s both;
+  }
+  .s-title .meta {
+    font-size: 0.75rem; color: rgba(255,255,255,0.3);
+    letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600;
+    animation: fadeIn 1s 0.8s both;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ============ SLIDE 2: PROBLEM ============ */
+  .s-problem { background: var(--limestone); }
+  .s-problem .section-tag { background: rgba(196,113,59,0.12); color: var(--foxglove); }
+  .problem-layout {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
+    align-items: center;
+  }
+  .problem-number { color: var(--foxglove); margin-bottom: 0.5rem; }
+  .problem-statement {
+    font-family: var(--font-display); font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+    color: var(--moss-deep); line-height: 1.2; margin-bottom: 1rem;
+  }
+  .problem-img {
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.12);
+  }
+  .problem-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  /* ============ SLIDE 3: STATS ============ */
+  .s-stats {
+    background: var(--moss-deep); color: var(--cloud);
+  }
+  .s-stats .section-tag { background: rgba(255,255,255,0.08); color: var(--foxglove-warm); }
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 3rem;
+    margin-top: 2rem;
+  }
+  .stat-block { }
+  .stat-hero-num {
+    font-family: var(--font-display); font-size: clamp(4rem, 10vw, 7rem);
+    color: var(--foxglove-warm); line-height: 1;
+  }
+  .stat-desc {
+    font-size: 1.1rem; font-weight: 300; opacity: 0.6;
+    margin-top: 0.5rem; max-width: 280px; line-height: 1.5;
+  }
+
+  /* ============ SLIDE 4: SOLUTION ============ */
+  .s-solution {
+    background:
+      linear-gradient(to right, var(--limestone) 55%, transparent 55%),
+      url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=80') right center/cover;
+    min-height: 100vh;
+  }
+  .s-solution .section-tag { background: rgba(45,80,22,0.1); color: var(--moss); }
+  .solution-content { max-width: 520px; }
+  .solution-title {
+    font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3.2rem);
+    color: var(--moss-deep); line-height: 1.15; margin-bottom: 2rem;
+  }
+  .pillar {
+    display: flex; gap: 1rem; margin-bottom: 1.5rem;
+    align-items: flex-start;
+  }
+  .pillar-icon {
+    width: 48px; height: 48px; min-width: 48px; border-radius: 12px;
+    background: var(--moss); color: var(--cloud);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+  }
+  .pillar h3 { font-size: 1.05rem; font-weight: 700; color: var(--moss-deep); margin-bottom: 0.2rem; }
+  .pillar p { font-size: 0.85rem; opacity: 0.6; line-height: 1.5; }
+
+  /* ============ SLIDE 5: MARKET ============ */
+  .s-market { background: var(--cloud); }
+  .s-market .section-tag { background: rgba(45,80,22,0.08); color: var(--moss); }
+  .market-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+  .tam-visual {
+    display: flex; flex-direction: column; align-items: center; gap: 1rem;
+  }
+  .tam-circle {
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    flex-direction: column; text-align: center;
+    transition: transform 0.4s;
+  }
+  .tam-circle:hover { transform: scale(1.05); }
+  .tam-circle .num { font-family: var(--font-display); line-height: 1; }
+  .tam-circle .lbl { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 0.3rem; }
+  .tam-1 { width: 260px; height: 260px; background: rgba(45,80,22,0.08); }
+  .tam-1 .num { font-size: 2.8rem; color: var(--moss-deep); }
+  .tam-1 .lbl { color: var(--moss); opacity: 0.5; }
+  .tam-2 { width: 200px; height: 200px; background: rgba(45,80,22,0.15); margin-top: -40px; }
+  .tam-2 .num { font-size: 2.2rem; color: var(--moss-deep); }
+  .tam-2 .lbl { color: var(--moss); opacity: 0.6; }
+  .tam-3 { width: 140px; height: 140px; background: var(--foxglove); margin-top: -30px; }
+  .tam-3 .num { font-size: 1.6rem; color: var(--cloud); }
+  .tam-3 .lbl { color: rgba(255,255,255,0.7); }
+  .market-title {
+    font-family: var(--font-display); font-size: clamp(1.8rem, 3vw, 2.5rem);
+    color: var(--moss-deep); line-height: 1.2; margin-bottom: 1rem;
+  }
+
+  /* ============ SLIDE 6: EVIDENCE ============ */
+  .s-evidence {
+    background: var(--bark); color: var(--cloud);
+  }
+  .s-evidence .section-tag { background: rgba(196,113,59,0.2); color: var(--foxglove-warm); }
+  .evidence-title {
+    font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3rem);
+    color: var(--cloud); line-height: 1.15; margin-bottom: 2.5rem;
+  }
+  .evidence-bars { display: flex; flex-direction: column; gap: 1.5rem; }
+  .ebar { }
+  .ebar-label {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 0.5rem;
+  }
+  .ebar-name { font-weight: 600; font-size: 0.95rem; }
+  .ebar-val { font-family: var(--font-display); font-size: 1.8rem; color: var(--foxglove-warm); }
+  .ebar-track {
+    width: 100%; height: 8px; background: rgba(255,255,255,0.08); border-radius: 4px;
+    overflow: hidden;
+  }
+  .ebar-fill {
+    height: 100%; border-radius: 4px;
+    background: linear-gradient(90deg, var(--foxglove), var(--foxglove-warm));
+    width: 0%; transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .ebar-fill.animate { /* set via JS */ }
+  .ebar-source { font-size: 0.7rem; opacity: 0.3; margin-top: 0.3rem; }
+
+  /* ============ SLIDE 7: BUSINESS MODEL ============ */
+  .s-model { background: var(--limestone); }
+  .s-model .section-tag { background: rgba(45,80,22,0.08); color: var(--moss); }
+  .model-title {
+    font-family: var(--font-display); font-size: clamp(1.8rem, 3vw, 2.5rem);
+    color: var(--moss-deep); line-height: 1.2; margin-bottom: 2.5rem;
+  }
+  .revenue-bars {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; text-align: center;
+  }
+  .rev-col { }
+  .rev-year { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--moss); opacity: 0.5; margin-bottom: 1rem; }
+  .rev-bar-container { height: 250px; display: flex; align-items: flex-end; justify-content: center; }
+  .rev-bar {
+    width: 80px; border-radius: 8px 8px 0 0;
+    background: linear-gradient(180deg, var(--foxglove), var(--moss));
+    position: relative;
+    transition: height 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+    height: 0;
+  }
+  .rev-bar .rev-amount {
+    position: absolute; top: -2rem; left: 50%; transform: translateX(-50%);
+    font-family: var(--font-display); font-size: 1.3rem; color: var(--foxglove);
+    white-space: nowrap;
+  }
+  .rev-breakdown {
+    margin-top: 1rem; font-size: 0.75rem; opacity: 0.5; line-height: 1.6;
+  }
+
+  /* ============ SLIDE 8: THE ASK ============ */
+  .s-ask {
+    background:
+      linear-gradient(175deg, rgba(196,113,59,0.9) 0%, rgba(45,80,22,0.95) 100%),
+      url('https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=1920&q=80') center/cover;
+    color: var(--cloud); text-align: center;
+  }
+  .ask-amount {
+    font-family: var(--font-display); font-size: clamp(5rem, 12vw, 10rem);
+    line-height: 1; margin-bottom: 0.5rem;
+  }
+  .ask-label {
+    font-size: 1.3rem; font-weight: 300; opacity: 0.7;
+    margin-bottom: 3rem;
+  }
+  .use-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
+    max-width: 700px; margin: 0 auto;
+  }
+  .use-item {
+    padding: 1.5rem 1rem; border-radius: 12px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .use-pct { font-family: var(--font-display); font-size: 2rem; }
+  .use-label { font-size: 0.8rem; font-weight: 600; opacity: 0.7; margin-top: 0.3rem; }
+
+  /* ============ SLIDE 9: TRACTION ============ */
+  .s-traction { background: var(--cloud); }
+  .s-traction .section-tag { background: rgba(45,80,22,0.08); color: var(--moss); }
+  .traction-title {
+    font-family: var(--font-display); font-size: clamp(1.8rem, 3vw, 2.5rem);
+    color: var(--moss-deep); line-height: 1.2; margin-bottom: 3rem;
+  }
+  .milestone-track {
+    display: flex; gap: 0; position: relative;
+  }
+  .milestone-track::before {
+    content: ''; position: absolute;
+    top: 24px; left: 0; right: 0; height: 3px;
+    background: var(--mist);
+  }
+  .milestone {
+    flex: 1; text-align: center; position: relative;
+  }
+  .milestone-dot {
+    width: 48px; height: 48px; border-radius: 50%;
+    margin: 0 auto 1rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; font-weight: 700;
+    position: relative; z-index: 2;
+  }
+  .milestone:nth-child(1) .milestone-dot { background: var(--foxglove); color: var(--cloud); }
+  .milestone:nth-child(2) .milestone-dot { background: var(--moss); color: var(--cloud); }
+  .milestone:nth-child(3) .milestone-dot { background: var(--meadow); color: var(--cloud); }
+  .milestone h4 { font-size: 0.9rem; font-weight: 700; color: var(--moss-deep); margin-bottom: 0.3rem; }
+  .milestone p { font-size: 0.8rem; opacity: 0.5; line-height: 1.5; max-width: 200px; margin: 0 auto; }
+
+  /* ============ SLIDE 10: TEAM ============ */
+  .s-team {
+    background: var(--moss-deep); color: var(--cloud);
+  }
+  .s-team .section-tag { background: rgba(255,255,255,0.08); color: var(--foxglove-warm); }
+  .team-title {
+    font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3rem);
+    color: var(--cloud); line-height: 1.15; margin-bottom: 2.5rem;
+  }
+  .team-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem;
+  }
+  .team-card {
+    padding: 2rem 1.5rem; border-radius: 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    text-align: center;
+  }
+  .team-avatar {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: var(--foxglove); margin: 0 auto 1rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+  }
+  .team-card h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.2rem; }
+  .team-card .role { font-size: 0.75rem; color: var(--foxglove-warm); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+  .team-card p { font-size: 0.8rem; opacity: 0.5; line-height: 1.5; }
+
+  /* ============ SLIDE 11: CLOSE ============ */
+  .s-close {
+    background:
+      linear-gradient(175deg, rgba(26,48,9,0.9) 0%, rgba(45,80,22,0.8) 100%),
+      url('https://images.unsplash.com/photo-1590089415225-401ed6f9db8e?w=1920&q=85') center/cover;
+    color: var(--cloud); text-align: center;
+  }
+  .close-quote {
+    font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3.2rem);
+    font-style: italic; line-height: 1.3;
+    max-width: 700px; margin: 0 auto 2rem;
+  }
+  .close-cta {
+    font-size: 1.1rem; font-weight: 300; opacity: 0.6;
+    margin-bottom: 2rem;
+  }
+  .contact-info {
+    font-size: 0.85rem; opacity: 0.4;
+  }
+  .contact-info a { color: var(--foxglove-warm); text-decoration: none; }
+
+  /* ============ SLIDE 12: LESSONS ============ */
+  .s-lessons { background: var(--limestone); }
+  .s-lessons .section-tag { background: rgba(196,113,59,0.12); color: var(--foxglove); }
+  .lessons-title {
+    font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3rem);
+    color: var(--moss-deep); line-height: 1.15; margin-bottom: 3rem;
+  }
+  .lessons-list { display: flex; flex-direction: column; gap: 1.25rem; max-width: 800px; }
+  .lesson {
+    display: flex; gap: 1.25rem; align-items: flex-start;
+    padding: 1.25rem 1.5rem; border-radius: 12px;
+    background: var(--cloud); border-left: 4px solid var(--foxglove);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+    transition: transform 0.3s;
+  }
+  .lesson:hover { transform: translateX(6px); }
+  .lesson-num {
+    font-family: var(--font-display); font-size: 1.5rem;
+    color: var(--foxglove); min-width: 2rem;
+  }
+  .lesson p { font-size: 0.95rem; line-height: 1.6; color: var(--bark); }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 768px) {
+    .problem-layout, .market-layout, .revenue-bars, .team-grid, .stats-grid {
+      grid-template-columns: 1fr;
+    }
+    .use-grid { grid-template-columns: 1fr; }
+    .milestone-track { flex-direction: column; gap: 1.5rem; }
+    .milestone-track::before { display: none; }
+    .slide-nav { display: none; }
+    .s-solution { background: var(--limestone); }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+<nav class="slide-nav" id="slideNav"></nav>
+
+<!-- SLIDE 1: TITLE -->
+<section class="slide s-title" id="slide-0">
+  <div class="slide-inner">
+    <svg class="fox-logo" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 60 C8 60 16 16 40 8 C64 16 72 60 72 60 L58 52 C58 52 50 38 40 34 C30 38 22 52 22 52 Z" fill="#C4713B"/>
+      <circle cx="30" cy="38" r="3" fill="#1A3009"/>
+      <circle cx="50" cy="38" r="3" fill="#1A3009"/>
+      <path d="M35 48 Q40 52 45 48" stroke="#1A3009" stroke-width="2" fill="none" stroke-linecap="round"/>
+    </svg>
+    <h1 class="mega">Zen<em>Fox</em></h1>
+    <p class="tagline">Nature-based mental resilience for Irish farming communities. Peer-led. Outdoor. Stigma-free.</p>
+    <p class="meta">Seed Round · €750K · April 2026</p>
+  </div>
+</section>
+
+<!-- SLIDE 2: PROBLEM -->
+<section class="slide s-problem" id="slide-1">
+  <div class="slide-inner">
+    <div class="problem-layout">
+      <div>
+        <span class="section-tag reveal">The Problem</span>
+        <div class="problem-number hero-num reveal reveal-d1" style="color:var(--foxglove);">57%</div>
+        <p class="problem-statement reveal reveal-d2">of Irish farmers have experienced significant anxiety — yet almost none seek help.</p>
+        <p class="slide-note reveal reveal-d3">Clinical services feel foreign. Schedules are impossible. The stigma is crushing. No solution speaks their language, fits their calendar, or meets them on their land.</p>
+      </div>
+      <div class="problem-img reveal reveal-d2">
+        <img src="https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=800&q=80&auto=format" alt="Solitary figure in expansive green farmland" loading="lazy">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 3: STATS -->
+<section class="slide s-stats" id="slide-2">
+  <div class="slide-inner">
+    <span class="section-tag reveal">By the Numbers</span>
+    <div class="stats-grid">
+      <div class="stat-block reveal">
+        <div class="stat-hero-num">60%</div>
+        <p class="stat-desc">of Irish farmers report feelings of isolation</p>
+      </div>
+      <div class="stat-block reveal reveal-d1">
+        <div class="stat-hero-num">80+</div>
+        <p class="stat-desc">hours worked per week in peak season</p>
+      </div>
+      <div class="stat-block reveal reveal-d2">
+        <div class="stat-hero-num">4×</div>
+        <p class="stat-desc">higher depression risk for isolated women farmers</p>
+      </div>
+      <div class="stat-block reveal reveal-d3">
+        <div class="stat-hero-num">135K</div>
+        <p class="stat-desc">active farms in Ireland — a vast underserved market</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 4: SOLUTION -->
+<section class="slide s-solution" id="slide-3">
+  <div class="slide-inner">
+    <div class="solution-content">
+      <span class="section-tag reveal">The Solution</span>
+      <h2 class="solution-title reveal reveal-d1">Your land is your best therapist.</h2>
+      <div class="pillar reveal reveal-d2">
+        <div class="pillar-icon">🌿</div>
+        <div>
+          <h3>Field Sessions</h3>
+          <p>Fortnightly outdoor mindfulness. Led by trained farmer Guides. On farms, in woods, at heritage sites.</p>
+        </div>
+      </div>
+      <div class="pillar reveal reveal-d3">
+        <div class="pillar-icon">📱</div>
+        <div>
+          <h3>The ZenFox App</h3>
+          <p>Daily audio practices in farming voices. Offline-first. Seasonal 8-week Resilience Trails.</p>
+        </div>
+      </div>
+      <div class="pillar reveal reveal-d4">
+        <div class="pillar-icon">🤝</div>
+        <div>
+          <h3>Community Layer</h3>
+          <p>Integrated with IFA, Teagasc, and Macra. Field Days at agricultural events. Peer trust, not clinical referral.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 5: MARKET -->
+<section class="slide s-market" id="slide-4">
+  <div class="slide-inner">
+    <div class="market-layout">
+      <div>
+        <span class="section-tag reveal">Market Size</span>
+        <h2 class="market-title reveal reveal-d1">An underserved segment hiding in plain sight.</h2>
+        <p class="slide-note reveal reveal-d2" style="max-width:450px;opacity:0.65;font-size:1rem;line-height:1.7;">
+          135,000 Irish farms. 300,000 people in agriculture. Zero nature-based, peer-led resilience programmes. The land is already there — we just need to activate it.
+        </p>
+      </div>
+      <div class="tam-visual reveal reveal-d2">
+        <div class="tam-circle tam-1">
+          <span class="num">300K</span>
+          <span class="lbl">TAM</span>
+        </div>
+        <div class="tam-circle tam-2">
+          <span class="num">55K</span>
+          <span class="lbl">SAM</span>
+        </div>
+        <div class="tam-circle tam-3">
+          <span class="num">800</span>
+          <span class="lbl">Y1 SOM</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 6: EVIDENCE -->
+<section class="slide s-evidence" id="slide-5">
+  <div class="slide-inner">
+    <span class="section-tag reveal">Clinical Evidence</span>
+    <h2 class="evidence-title reveal reveal-d1">Nature-based mindfulness produces large, measurable effects.</h2>
+    <div class="evidence-bars">
+      <div class="ebar reveal reveal-d2">
+        <div class="ebar-label">
+          <span class="ebar-name">Stress Reduction</span>
+          <span class="ebar-val">d = 0.90</span>
+        </div>
+        <div class="ebar-track"><div class="ebar-fill" data-width="90%"></div></div>
+        <div class="ebar-source">Kim et al., 2023 — Nature Scientific Reports</div>
+      </div>
+      <div class="ebar reveal reveal-d3">
+        <div class="ebar-label">
+          <span class="ebar-name">Anxiety Reduction</span>
+          <span class="ebar-val">d = 0.73</span>
+        </div>
+        <div class="ebar-track"><div class="ebar-fill" data-width="73%"></div></div>
+        <div class="ebar-source">Multi-site trial, 291 participants, therapeutic gardening</div>
+      </div>
+      <div class="ebar reveal reveal-d4">
+        <div class="ebar-label">
+          <span class="ebar-name">Loneliness Reduction</span>
+          <span class="ebar-val">d = 0.70</span>
+        </div>
+        <div class="ebar-track"><div class="ebar-fill" data-width="70%"></div></div>
+        <div class="ebar-source">Nature-based therapy vs. control group</div>
+      </div>
+      <div class="ebar reveal reveal-d5">
+        <div class="ebar-label">
+          <span class="ebar-name">Overall NBM Effect</span>
+          <span class="ebar-val">g = 0.54</span>
+        </div>
+        <div class="ebar-track"><div class="ebar-fill" data-width="54%"></div></div>
+        <div class="ebar-source">Djernis et al., 2019 — Systematic review & meta-analysis</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 7: BUSINESS MODEL -->
+<section class="slide s-model" id="slide-6">
+  <div class="slide-inner">
+    <span class="section-tag reveal">Business Model</span>
+    <h2 class="model-title reveal reveal-d1">Five revenue streams. Breakeven in Year 1.</h2>
+    <div class="revenue-bars reveal reveal-d2">
+      <div class="rev-col">
+        <div class="rev-year">Year 1</div>
+        <div class="rev-bar-container">
+          <div class="rev-bar" data-height="90px">
+            <span class="rev-amount">€550K</span>
+          </div>
+        </div>
+        <div class="rev-breakdown">4 counties<br>800 farmers<br>80 Guides</div>
+      </div>
+      <div class="rev-col">
+        <div class="rev-year">Year 2</div>
+        <div class="rev-bar-container">
+          <div class="rev-bar" data-height="160px">
+            <span class="rev-amount">€1.1M</span>
+          </div>
+        </div>
+        <div class="rev-breakdown">10 counties<br>3,000 farmers<br>150 Guides</div>
+      </div>
+      <div class="rev-col">
+        <div class="rev-year">Year 3</div>
+        <div class="rev-bar-container">
+          <div class="rev-bar" data-height="250px">
+            <span class="rev-amount">€1.86M</span>
+          </div>
+        </div>
+        <div class="rev-breakdown">National + UK<br>8,000 farmers<br>250 Guides</div>
+      </div>
+    </div>
+    <p class="slide-note reveal reveal-d3" style="text-align:center;margin:2rem auto 0;max-width:500px;">
+      LTV:CAC ratio of 7.2× · Government contracts + app subs + guide certs + sponsorship + grants
+    </p>
+  </div>
+</section>
+
+<!-- SLIDE 8: THE ASK -->
+<section class="slide s-ask" id="slide-7">
+  <div class="slide-inner">
+    <span class="section-tag reveal" style="background:rgba(255,255,255,0.1);color:var(--cloud);">The Ask</span>
+    <div class="ask-amount reveal reveal-d1">€750K</div>
+    <p class="ask-label reveal reveal-d2">Seed Round</p>
+    <div class="use-grid">
+      <div class="use-item reveal reveal-d3">
+        <div class="use-pct">33%</div>
+        <div class="use-label">Product & App</div>
+      </div>
+      <div class="use-item reveal reveal-d4">
+        <div class="use-pct">27%</div>
+        <div class="use-label">Team</div>
+      </div>
+      <div class="use-item reveal reveal-d5">
+        <div class="use-pct">13%</div>
+        <div class="use-label">Guide Training</div>
+      </div>
+      <div class="use-item reveal reveal-d3">
+        <div class="use-pct">13%</div>
+        <div class="use-label">Go-to-Market</div>
+      </div>
+      <div class="use-item reveal reveal-d4">
+        <div class="use-pct">8%</div>
+        <div class="use-label">Research</div>
+      </div>
+      <div class="use-item reveal reveal-d5">
+        <div class="use-pct">6%</div>
+        <div class="use-label">Operations</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 9: TRACTION -->
+<section class="slide s-traction" id="slide-8">
+  <div class="slide-inner">
+    <span class="section-tag reveal">3-Year Roadmap</span>
+    <h2 class="traction-title reveal reveal-d1">From four counties to a national movement.</h2>
+    <div class="milestone-track">
+      <div class="milestone reveal reveal-d2">
+        <div class="milestone-dot">Y1</div>
+        <h4>Seeds</h4>
+        <p>4 pilot counties. 80 trained Guides. 800 farmers. HSE pilot funding. App v1.0 launch.</p>
+      </div>
+      <div class="milestone reveal reveal-d3">
+        <div class="milestone-dot">Y2</div>
+        <h4>Growth</h4>
+        <p>10 counties. 3,000 farmers. Corporate sponsors. Published outcomes data. Premium app tier.</p>
+      </div>
+      <div class="milestone reveal reveal-d4">
+        <div class="milestone-dot">Y3</div>
+        <h4>Scale</h4>
+        <p>National rollout. 8,000 farmers. UK expansion (Wales, Scotland). Enterprise partnerships.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 10: TEAM -->
+<section class="slide s-team" id="slide-9">
+  <div class="slide-inner">
+    <span class="section-tag reveal">The Team</span>
+    <h2 class="team-title reveal reveal-d1">Built by people who understand the land.</h2>
+    <div class="team-grid">
+      <div class="team-card reveal reveal-d2">
+        <div class="team-avatar">🌾</div>
+        <h4>CEO / Founder</h4>
+        <div class="role">Leadership</div>
+        <p>Rural dev or agri-tech background. Lived farming experience. Social enterprise leader.</p>
+      </div>
+      <div class="team-card reveal reveal-d3">
+        <div class="team-avatar">🧠</div>
+        <h4>Clinical Director</h4>
+        <div class="role">Governance</div>
+        <p>Registered psychologist. Nature-based therapy cert. Research partnership with UCC/NUIG.</p>
+      </div>
+      <div class="team-card reveal reveal-d4">
+        <div class="team-avatar">🤝</div>
+        <h4>Head of Training</h4>
+        <div class="role">Delivery</div>
+        <p>Former Teagasc advisor or Macra leader. Deep farming network. Guide programme architect.</p>
+      </div>
+      <div class="team-card reveal reveal-d5">
+        <div class="team-avatar">⚡</div>
+        <h4>CTO</h4>
+        <div class="role">Product</div>
+        <p>React Native. Health data compliance. Offline-first architecture for rural dead zones.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 11: CLOSE -->
+<section class="slide s-close" id="slide-10">
+  <div class="slide-inner">
+    <p class="close-quote reveal">"Peace is not the absence of a predator, but the presence of attention."</p>
+    <p class="close-cta reveal reveal-d1">The land is already there. The evidence is clear. The community is ready.<br>Let's build ZenFox together.</p>
+    <p class="contact-info reveal reveal-d2">
+      <a href="mailto:hello@zenfox.ie">hello@zenfox.ie</a> · zenfox.ie
+    </p>
+  </div>
+</section>
+
+<!-- SLIDE 12: LESSONS LEARNED -->
+<section class="slide s-lessons" id="slide-11">
+  <div class="slide-inner">
+    <span class="section-tag reveal">Reflection</span>
+    <h2 class="lessons-title reveal reveal-d1">Lessons Learned</h2>
+    <div class="lessons-list">
+      <div class="lesson reveal reveal-d1">
+        <span class="lesson-num">1</span>
+        <p><strong>Stories unlock systems thinking.</strong> Starting from a fable about a fox and an orchard led us to a real, research-backed mental health crisis. Creative starting points can expose problems that pure analysis misses.</p>
+      </div>
+      <div class="lesson reveal reveal-d2">
+        <span class="lesson-num">2</span>
+        <p><strong>The best therapy room is already built.</strong> Nature-based interventions produce clinical-grade results — but the delivery model matters as much as the science. Meeting people in their own landscape changes everything.</p>
+      </div>
+      <div class="lesson reveal reveal-d3">
+        <span class="lesson-num">3</span>
+        <p><strong>Stigma is a design problem, not just a cultural one.</strong> When you reframe therapy as "resilience training" and put it alongside farm safety workshops, resistance dissolves. Language and context are the real intervention.</p>
+      </div>
+      <div class="lesson reveal reveal-d4">
+        <span class="lesson-num">4</span>
+        <p><strong>Peer trust scales better than expertise.</strong> Training farmers to guide other farmers is more scalable, more culturally credible, and more sustainable than hiring therapists. The Guide model is the moat.</p>
+      </div>
+      <div class="lesson reveal reveal-d5">
+        <span class="lesson-num">5</span>
+        <p><strong>Social enterprises can be real businesses.</strong> With a 7.2× LTV:CAC ratio and five diversified revenue streams, ZenFox proves you don't need to choose between impact and viability. Mission and margin can coexist.</p>
+      </div>
+      <div class="lesson reveal reveal-d5">
+        <span class="lesson-num">6</span>
+        <p><strong>AI can accelerate the full 0-to-1 journey.</strong> From story to research to problem statement to solution design to prototype to pitch deck — the entire innovation pipeline ran in a single session. The bottleneck isn't ideas; it's the willingness to follow one thread all the way through.</p>
+      </div>
+      <div class="lesson reveal reveal-d6">
+        <span class="lesson-num">7</span>
+        <p><strong>The best products feel inevitable in hindsight.</strong> 135,000 farms, 57% anxiety, zero nature-based programmes — the gap was always there. Sometimes the most powerful innovation is simply connecting dots that were waiting to be connected.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Scroll progress
+  const progressFill = document.getElementById('progressFill');
+  const slides = document.querySelectorAll('.slide');
+
+  // Build nav dots
+  const slideNav = document.getElementById('slideNav');
+  slides.forEach((_, i) => {
+    const dot = document.createElement('button');
+    dot.className = 'slide-dot';
+    dot.onclick = () => slides[i].scrollIntoView({ behavior: 'smooth' });
+    slideNav.appendChild(dot);
+  });
+  const dots = slideNav.querySelectorAll('.slide-dot');
+
+  // Scroll handler
+  window.addEventListener('scroll', () => {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    progressFill.style.width = (scrollTop / docHeight * 100) + '%';
+
+    // Active dot
+    let current = 0;
+    slides.forEach((slide, i) => {
+      if (slide.getBoundingClientRect().top < window.innerHeight * 0.5) current = i;
+    });
+    dots.forEach((d, i) => d.classList.toggle('active', i === current));
+  });
+
+  // Reveal on scroll
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+
+        // Animate evidence bars
+        const bar = entry.target.querySelector('.ebar-fill');
+        if (bar) setTimeout(() => { bar.style.width = bar.dataset.width; }, 200);
+
+        // Animate revenue bars
+        const revBar = entry.target.querySelector('.rev-bar');
+        if (revBar) setTimeout(() => { revBar.style.height = revBar.dataset.height; }, 300);
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -30px 0px' });
+  reveals.forEach(el => observer.observe(el));
+
+  // Also observe containers for bars
+  document.querySelectorAll('.ebar, .rev-col').forEach(el => {
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const bar = entry.target.querySelector('.ebar-fill');
+          if (bar) setTimeout(() => { bar.style.width = bar.dataset.width; }, 500);
+          const revBar = entry.target.querySelector('.rev-bar');
+          if (revBar) setTimeout(() => { revBar.style.height = revBar.dataset.height; }, 500);
+        }
+      });
+    }, { threshold: 0.3 });
+    obs.observe(el);
+  });
+
+  // Keyboard nav
+  document.addEventListener('keydown', (e) => {
+    let current = 0;
+    slides.forEach((slide, i) => {
+      if (slide.getBoundingClientRect().top < window.innerHeight * 0.5) current = i;
+    });
+    if ((e.key === 'ArrowDown' || e.key === ' ' || e.key === 'ArrowRight') && current < slides.length - 1) {
+      e.preventDefault();
+      slides[current + 1].scrollIntoView({ behavior: 'smooth' });
+    }
+    if ((e.key === 'ArrowUp' || e.key === 'ArrowLeft') && current > 0) {
+      e.preventDefault();
+      slides[current - 1].scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+</script>
+
+</body>
+</html>
